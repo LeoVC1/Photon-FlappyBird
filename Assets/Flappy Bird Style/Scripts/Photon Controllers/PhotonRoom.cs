@@ -1,5 +1,6 @@
 ﻿using Photon.Pun;
 using Photon.Realtime;
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -20,23 +21,30 @@ public class PhotonRoom : MonoBehaviourPunCallbacks, IInRoomCallbacks
         }
     }
 
-    public event UnityAction<int> OnPlayersCountChange; 
-
-    private int _playersInRoom;
+    public static event UnityAction<int> OnPlayersCountChange; 
 
     private void Awake()
     {
-        if (instance)
+        if (instance == null)
         {
-            Destroy(instance.gameObject);
+            instance = this;
         }
-
-        instance = this;
+        else
+        {
+            if ((instance != this))
+            {
+                Destroy(this.gameObject);
+            }
+        }
 
         DontDestroyOnLoad(gameObject);
 
         PV = GetComponent<PhotonView>();
+
+        OnPlayersCountChange = new UnityAction<int>(EventOnPlayersCountChange);
     }
+
+    private void EventOnPlayersCountChange(int arg0) { }
 
     public override void OnEnable()
     {
@@ -97,4 +105,6 @@ public class PhotonRoom : MonoBehaviourPunCallbacks, IInRoomCallbacks
         }
     }
 
+    private int _playersInRoom;
+    private PhotonView PV;
 }

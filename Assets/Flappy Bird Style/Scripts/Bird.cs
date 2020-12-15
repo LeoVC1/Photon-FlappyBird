@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Photon.Pun;
 
 public class Bird : MonoBehaviour 
 {
@@ -7,7 +8,9 @@ public class Bird : MonoBehaviour
 	private bool isDead = false;			//Has the player collided with a wall?
 
 	private Animator anim;					//Reference to the Animator component.
-	private Rigidbody2D rb2d;				//Holds a reference to the Rigidbody2D component of the bird.
+	private Rigidbody2D rb2d;               //Holds a reference to the Rigidbody2D component of the bird.
+
+	private PhotonView PV;
 
 	void Start()
 	{
@@ -15,10 +18,15 @@ public class Bird : MonoBehaviour
 		anim = GetComponent<Animator> ();
 		//Get and store a reference to the Rigidbody2D attached to this GameObject.
 		rb2d = GetComponent<Rigidbody2D>();
+
+		PV = GetComponent<PhotonView>();
 	}
 
 	void Update()
 	{
+		if (!PV.IsMine)
+			return;
+
 		//Don't allow control if the bird has died.
 		if (isDead == false) 
 		{
@@ -38,6 +46,9 @@ public class Bird : MonoBehaviour
 
 	void OnCollisionEnter2D(Collision2D other)
 	{
+		if (!PV.IsMine)
+			return;
+
 		// Zero out the bird's velocity
 		rb2d.velocity = Vector2.zero;
 		// If the bird collides with something set it to dead...

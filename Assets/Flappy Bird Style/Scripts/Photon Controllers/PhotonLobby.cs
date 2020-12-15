@@ -3,48 +3,35 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
+using UnityEngine.Events;
+using System;
 
 public class PhotonLobby : MonoBehaviourPunCallbacks
 {
-    public static PhotonLobby instance;
+    public static event UnityAction<bool> OnServerStatusChange;
+    public static event UnityAction<bool> OnQueueStatusChange;
 
-    public TextMeshProUGUI onlinePlayers;
-
-    private Coroutine displayPlayersOnline;
-    
-    private void Awake()
-    {
-        instance = this;
-    }
-    
     void Start()
     {
         PhotonNetwork.ConnectUsingSettings();
-    }
 
-    private IEnumerator GetPlayersOnline()
-    {
-        while (true)
-        {
-            onlinePlayers.text = PhotonNetwork.CountOfPlayers.ToString();
-            yield return new WaitForSeconds(1);
-        }
+        OnServerStatusChange = new UnityAction<bool>(EventOnServerStatusChange);
+        OnQueueStatusChange = new UnityAction<bool>(EventOnQueueStatusChange);
     }
+    private void EventOnServerStatusChange(bool arg0) { }
+    private void EventOnQueueStatusChange(bool arg0) { }
 
     public override void OnConnectedToMaster()
     {
         print("Player has connected to the Photon Server");
-        OnServerStatusChange.Raise(true);
+        OnServerStatusChange.Invoke(true);
         PhotonNetwork.AutomaticallySyncScene = true;
-
-        if(displayPlayersOnline == null)
-            displayPlayersOnline = StartCoroutine(GetPlayersOnline());
     }
 
     public override void OnDisconnected(DisconnectCause cause)
     {
         base.OnDisconnected(cause);
-        OnServerStatusChange.Raise(false);
+        OnServerStatusChange.Invoke(false);
     }
 
     public override void OnJoinRandomFailed(short returnCode, string message)
@@ -70,16 +57,14 @@ public class PhotonLobby : MonoBehaviourPunCallbacks
 
     public void OnBattleButtonClicked()
     {
-        print("Battle Button was click");
-
-        OnQueueStatusChange.Raise(true);
+        OnQueueStatusChange.Invoke(true);
 
         PhotonNetwork.JoinRandomRoom();
     }
 
     public void OnCancelButtonClicked()
     {
-        OnQueueStatusChange.Raise(false);
+        OnQueueStatusChange.Invoke(false);
 
         PhotonNetwork.LeaveRoom();
     }
