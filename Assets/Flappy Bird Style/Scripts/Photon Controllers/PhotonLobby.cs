@@ -11,13 +11,14 @@ public class PhotonLobby : MonoBehaviourPunCallbacks
     public static event UnityAction<bool> OnServerStatusChange;
     public static event UnityAction<bool> OnQueueStatusChange;
 
-    void Start()
+    void Awake()
     {
         PhotonNetwork.ConnectUsingSettings();
 
         OnServerStatusChange = new UnityAction<bool>(EventOnServerStatusChange);
         OnQueueStatusChange = new UnityAction<bool>(EventOnQueueStatusChange);
     }
+
     private void EventOnServerStatusChange(bool arg0) { }
     private void EventOnQueueStatusChange(bool arg0) { }
 
